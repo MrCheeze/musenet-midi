@@ -1,0 +1,11 @@
+{
+  "requires": true,
+  "lockfileVersion": 1,
+  "dependencies": {
+    "midi-file": {
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/midi-file/-/midi-file-1.1.1.tgz",
+      "integrity": "sha512-HI6Y/kc9g1Af0OqMkTzI2AeGgPJMONgQcd/13gBf8C9BcUh7wa/AnXR1Fgl8SIuO7GJmFhSIACEWcwiAz2E2Pg=="
+    }
+  }
+}
