@@ -91,6 +91,10 @@ window.extend = function() {
 		document.getElementById('sound3').src="data:audio/ogg;base64,"+response.completions[2].oggFile.substring(2,response.completions[2].oggFile.length-1);
 		document.getElementById('sound4').src="data:audio/ogg;base64,"+response.completions[3].oggFile.substring(2,response.completions[3].oggFile.length-1);
 		document.getElementById("button").disabled = false;
+		window.encodingToMidiFile(response.completions[0].encoding, "download_outbox1");
+		window.encodingToMidiFile(response.completions[1].encoding, "download_outbox2");
+		window.encodingToMidiFile(response.completions[2].encoding, "download_outbox3");
+		window.encodingToMidiFile(response.completions[3].encoding, "download_outbox4");
 	}).catch(error => {
 		alert(error);
 		document.getElementById("button").disabled = false;
