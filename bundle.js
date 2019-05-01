@@ -143,6 +143,14 @@ window.encodingToMidiFile = function(encoding, outlink) {
 		}
 	}
 
+	for (var i=0; i<midiData.tracks.length; i++) {
+		midiData.tracks[i].push({
+			"deltaTime": deltaTimes[trackIndex],
+			"meta": true,
+			"type": "endOfTrack"
+		});
+	}
+
 	console.log(midiData);
 
 	var midiBlob = new Blob([new Uint8Array(writeMidi(midiData))], {type: "audio/midi"});
