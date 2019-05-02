@@ -6,27 +6,43 @@
 	<body style="text-align: center;">
 		<p>
 			<input id="file-input" type="file" style="display: none;" onchange="importMidiFile(this.files[0])"/>
-			<a href="javascript:importMidi()">import midi</a> - <a href="javascript:;" id="download_inbox">export midi</a>
+			<a href="javascript:importMidi()">import midi</a> - <a href="javascript:;" id="download_inbox">export midi</a> - <a href="https://cdn.discordapp.com/attachments/194627386141179904/573188521863413780/musenet_tutorial.png" target="_blank">guide</a>
 			<textarea onchange="encodingToMidiFile(this.value, 'download_inbox')" id="inbox" style="width:96%; height: 33%"></textarea>
 		</p>
 		<p>
 			Genre:
 			<select id="genre">
-				<option value="video">Video</option>
+				<option value="chopin">Chopin</option>
+				<option value="mozart">Mozart</option>
+				<option value="rachmaninoff">Rachmaninoff</option>
+				<option value="ladygaga">Lady Gaga</option>
+				<option value="country">Country</option>
+				<option value="disney">Disney</option>
+				<option value="jazz">Jazz</option>
+				<option value="bach">Bach</option>
+				<option value="beethoven">Beethoven</option>
+				<option value="journey">Journey</option>
+				<option value="thebeatles">The Beatles</option>
+				<option value="video" selected="selected">Video Games</option>
+				<option value="broadway">Broadway</option>
+				<option value="franksinatra">Frank Sinatra</option>
+				<option value="bluegrass">Bluegrass</option>
+				<option value="tchaikovsky">Tchaikovsky</option>
 			</select>&nbsp;
 			<label for="piano">Piano:</label><input type="checkbox" id="piano" checked="checked"/>&nbsp;
-			<label for="strings">Strings:</label><input type="checkbox" id="strings"/>&nbsp;
-			<label for="winds">Winds:</label><input type="checkbox" id="winds"/>&nbsp;
-			<label for="drums">Drums:</label><input type="checkbox" id="drums"/>&nbsp;
+			<label for="strings">Strings:</label><input type="checkbox" id="strings" checked="checked"/>&nbsp;
+			<label for="winds">Winds:</label><input type="checkbox" id="winds" checked="checked"/>&nbsp;
+			<label for="drums">Drums:</label><input type="checkbox" id="drums" checked="checked"/>&nbsp;
 			<label for="harp">Harp:</label><input type="checkbox" id="harp"/>&nbsp;
-			<label for="guitar">Guitar:</label><input type="checkbox" id="guitar"/>&nbsp;
-			<label for="bass">Bass:</label><input type="checkbox" id="bass"/>&nbsp;
+			<label for="guitar">Guitar:</label><input type="checkbox" id="guitar" checked="checked"/>&nbsp;
+			<label for="bass">Bass:</label><input type="checkbox" id="bass" checked="checked"/>&nbsp;
 			Temperature: <input id="temperature" value="1" size="5"/>&nbsp;
 			Truncation: <input id="truncation" value="27" size="5"/>&nbsp;
 			Generation Length: <input id="generationLength" value="225" size="5"/>&nbsp;
 			<input type="button" value="Extend!" onclick="extend()" id="button"/>
 		</p>
 		<p>
+			<span style="display: inline-block; width: 24%"><input type="button" value="Copy upwards" onclick="copyup('outbox1')" id="button"/></span><span style="display: inline-block; width: 24%"><input type="button" value="Copy upwards" onclick="copyup('outbox2')" id="button"/></span><span style="display: inline-block; width: 24%"><input type="button" value="Copy upwards" onclick="copyup('outbox3')" id="button"/></span><span style="display: inline-block; width: 24%"><input type="button" value="Copy upwards" onclick="copyup('outbox4')" id="button"/></span>
 			<textarea onchange="encodingToMidiFile(this.value, 'download_outbox1')" id="outbox1" style="width:24%; height: 33%"></textarea><textarea onchange="encodingToMidiFile(this.value, 'download_outbox2')" id="outbox2" style="width:24%; height: 33%"></textarea><textarea onchange="encodingToMidiFile(this.value, 'download_outbox3')" id="outbox3" style="width:24%; height: 33%"></textarea><textarea onchange="encodingToMidiFile(this.value, 'download_outbox4')" id="outbox4" style="width:24%; height: 33%"></textarea>
 			<span style="display: inline-block; width: 24%"><a href="javascript:;" id="download_outbox1">export midi</a></span><span style="display: inline-block; width: 24%"><a href="javascript:;" id="download_outbox2">export midi</a></span><span style="display: inline-block; width: 24%"><a href="javascript:;" id="download_outbox3">export midi</a></span><span style="display: inline-block; width: 24%"><a href="javascript:;" id="download_outbox4">export midi</a></span>
 			<span style="display: inline-block; width: 24%"><audio controls="controls" id="sound1"/></span><span style="display: inline-block; width: 24%"><audio controls="controls" id="sound2"/></span><span style="display: inline-block; width: 24%"><audio controls="controls" id="sound3"/></span><span style="display: inline-block; width: 24%"><audio controls="controls" id="sound4"/></span>

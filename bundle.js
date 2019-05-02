@@ -4,8 +4,15 @@ var writeMidi = require('midi-file').writeMidi;
 
 var inst_to_track = {"piano":0,"violin":1,"cello":2,"bass":3,"guitar":4,"flute":5,"clarinet":6,"trumpet":7,"harp":8,"drum":9};
 
+var importedMidiTicksPerBeat = 48; // Default value if no MIDI imported
+
+window.copyup = function(elemid) {
+	document.getElementById("inbox").value = document.getElementById(elemid).value.trim();
+	window.encodingToMidiFile(document.getElementById("inbox").value, "download_inbox");
+}
+
 window.importMidi = function() {
-	alert("MIDI must be format 0, with 48 ticks per quarter note, with instruments mapped as follows:\nChannel 1: Piano\nChannel 2: Violin\nChannel 3: Cello\nChannel 4: Bass\nChannel 5: Guitar\nChannel 6: Flute\nChannel 7: Clarinet\nChannel 8: Trumpet\nChannel 9: Harp\nChannel 10: Drums\n");
+	alert("If the tempo sounds very wrong, change the MIDI ticks-per-beat to 48 using your MIDI editor of choice.");
 	javascript:document.getElementById('file-input').click();
 }
 window.importMidiFile = function(file) {
@@ -18,44 +25,129 @@ window.importMidiFile = function(file) {
 		var midiData = parseMidi(content);
 		console.log(midiData);
 
-		if (midiData.header.format != 0) {
-			alert("Must be type 0 MIDI. You can convert using Anvil Studio.");
-			return;
-		}
+		importedMidiTicksPerBeat = midiData.header.ticksPerBeat;
 
-		var encoded = "";
+		var allDeltaTimes = new Set();
+		allDeltaTimes.add(importedMidiTicksPerBeat);
+		
 		for (var i=0; i<midiData.tracks.length; i++) {
-			if (i == 0) {
-				for (var j=0; j<midiData.tracks[i].length; j++) {
-					var event = midiData.tracks[i][j];
-					var timeLeftToWait = event.deltaTime;
-					while (timeLeftToWait > 0) {
-						var waitTime = timeLeftToWait > 128 ? 128 : timeLeftToWait;
-						var token = 3968 + waitTime - 1;
-						encoded += token + " ";
-						timeLeftToWait -= waitTime;
-					}
-					if (event.channel > 9) {
-						alert("Must be no more than ten channels.");
-						return;
-					}
-					if (event.type == "noteOff" || (event.type == "noteOn" && event.velocity==0)) {
-						var baseNote = [0*128,15*128,17*128,19*128,21*128,23*128,25*128,27*128,29*128,null][event.channel];
-						if (baseNote !== null) {
-							token = baseNote + event.noteNumber;
-							encoded += token + " ";
-						}
-					} else if (event.type == "noteOn" && event.velocity > 0) {
-						var baseNote = [8*128,14*128,16*128,18*128,20*128,22*128,24*128,26*128,28*128,3840][event.channel];
-						token = baseNote + event.noteNumber;
-						encoded += token + " ";
-					}
-				}
+			for (var j=0; j<midiData.tracks[i].length; j++) {
+				allDeltaTimes.add(midiData.tracks[i][j].deltaTime);
 			}
 		}
+		var divideAllDeltaTimesBy = findGCFofList(Array.from(allDeltaTimes));
+		console.log(allDeltaTimes, divideAllDeltaTimesBy);
+		console.log(importedMidiTicksPerBeat);
+		importedMidiTicksPerBeat /= divideAllDeltaTimesBy;
+		console.log(importedMidiTicksPerBeat);
+		var multiplyAllDeltaTimesBy = 1;
+		if (importedMidiTicksPerBeat < 48) {
+			multiplyAllDeltaTimesBy = Math.round(48/importedMidiTicksPerBeat);
+		}
+		importedMidiTicksPerBeat *= multiplyAllDeltaTimesBy;
+		console.log(importedMidiTicksPerBeat);
+
+		var mergedTrack = [];
+		var originalOrder = 0;
+		for (var i=0; i<midiData.tracks.length; i++) {
+			var startTime = 0;
+			var currentInst = 0;
+			for (var j=0; j<midiData.tracks[i].length; j++) {
+				var event = midiData.tracks[i][j];
+				if (event.type == "programChange") {
+					currentInst = event.programNumber;
+				}
+				startTime += (event.deltaTime / divideAllDeltaTimesBy) * multiplyAllDeltaTimesBy;
+				event.startTime = startTime;
+				event.originalOrder = originalOrder;
+				event.currentInst = currentInst;
+				mergedTrack.push(event);
+				originalOrder++;
+			}
+		}
+		mergedTrack.sort(function(a, b){
+			if(a.startTime < b.startTime) { return -1; }
+			if(a.startTime > b.startTime) { return 1; }
+			if(a.originalOrder < b.originalOrder) { return -1; }
+			if(a.originalOrder > b.originalOrder) { return 1; }
+			return 0;
+		})
+
+		var encoded = "";
+		for (var i=0; i<mergedTrack.length; i++) {
+			var event = mergedTrack[i];
+			var deltaTime = (i == 0) ? event.startTime : (event.startTime - mergedTrack[i-1].startTime);
+			var timeLeftToWait = deltaTime;
+			while (timeLeftToWait > 0) {
+				var waitTime = timeLeftToWait > 128 ? 128 : timeLeftToWait;
+				var token = 3968 + waitTime - 1;
+				encoded += token + " ";
+				timeLeftToWait -= waitTime;
+			}
+			var inst = "piano";
+			var baseNoteOn = 8*128;
+			var baseNoteOff = 0*128;
+			if ([40,41,44,45,48,49,50,51].indexOf(event.currentInst) > -1) {
+				inst = "violin";
+				var baseNoteOn = 14*128;
+				var baseNoteOff = 15*128;
+			} else if ([42,43].indexOf(event.currentInst) > -1) {
+				inst = "cello";
+				var baseNoteOn = 16*128;
+				var baseNoteOff = 17*128;
+			} else if ([32,33,34,35,36,37,38,39].indexOf(event.currentInst) > -1) {
+				inst = "bass";
+				var baseNoteOn = 18*128;
+				var baseNoteOff = 19*128;
+			} else if ([24,25,26,27,28,29,30,31].indexOf(event.currentInst) > -1) {
+				inst = "guitar";
+				var baseNoteOn = 20*128;
+				var baseNoteOff = 21*128;
+			} else if ([72,73,74,75,76,77,78,79].indexOf(event.currentInst) > -1) {
+				inst = "flute";
+				var baseNoteOn = 22*128;
+				var baseNoteOff = 23*128;
+			} else if ([64,65,66,67,68,69,70,71].indexOf(event.currentInst) > -1) {
+				inst = "clarinet";
+				var baseNoteOn = 24*128;
+				var baseNoteOff = 25*128;
+			} else if ([56,57,58,59,60,61,62,63].indexOf(event.currentInst) > -1) {
+				inst = "trumpet";
+				var baseNoteOn = 26*128;
+				var baseNoteOff = 27*128;
+			} else if ([46].indexOf(event.currentInst) > -1) {
+				inst = "harp";
+				var baseNoteOn = 28*128;
+				var baseNoteOff = 29*128;
+			}
+
+			if (event.channel == 9) {
+				inst = "drum";
+				var baseNoteOn = 3840;
+				var baseNoteOff = null;
+			}
+			if (event.type == "noteOff" || (event.type == "noteOn" && event.velocity==0)) {
+				if (baseNoteOff !== null) {
+					token = baseNoteOff + event.noteNumber;
+					encoded += token + " ";
+				}
+			} else if (event.type == "noteOn" && event.velocity > 0) {
+				token = baseNoteOn + event.noteNumber;
+				encoded += token + " ";
+			}
+		}
+
 		document.getElementById("inbox").value = encoded.trim();
 		window.encodingToMidiFile(document.getElementById("inbox").value, "download_inbox");
 	}
+}
+
+function GCF(a, b) {
+    if (b === 0) return a;
+    else         return GCF(b, a % b);
+}
+function findGCFofList(list) {
+    return list.reduce(GCF);
 }
 
 window.extend = function() {
@@ -82,31 +174,59 @@ window.extend = function() {
 			"generationLength":parseFloat(document.getElementById("generationLength").value)
 		})
 	}).then(res => res.json()).then(function (response) {
+		window.oldDuration = Math.min(document.getElementById('sound1').duration,
+								   document.getElementById('sound2').duration,
+								   document.getElementById('sound3').duration,
+								   document.getElementById('sound4').duration);
+		if (isNaN(oldDuration) || !isFinite(oldDuration)) {
+			oldDuration = 0;
+		}
+		//need to convert from dataURI to blob to avoid firefox issue
+		document.getElementById('sound1').src=URL.createObjectURL(new Blob([convertDataURIToBinary("data:audio/ogg;base64,"+response.completions[0].oggFile.substring(2,response.completions[0].oggFile.length-1))], {type : 'audio/ogg'}));
+		document.getElementById('sound2').src=URL.createObjectURL(new Blob([convertDataURIToBinary("data:audio/ogg;base64,"+response.completions[1].oggFile.substring(2,response.completions[1].oggFile.length-1))], {type : 'audio/ogg'}));
+		document.getElementById('sound3').src=URL.createObjectURL(new Blob([convertDataURIToBinary("data:audio/ogg;base64,"+response.completions[2].oggFile.substring(2,response.completions[2].oggFile.length-1))], {type : 'audio/ogg'}));
+		document.getElementById('sound4').src=URL.createObjectURL(new Blob([convertDataURIToBinary("data:audio/ogg;base64,"+response.completions[3].oggFile.substring(2,response.completions[3].oggFile.length-1))], {type : 'audio/ogg'}));
 		document.getElementById("outbox1").value = response.completions[0].encoding;
 		document.getElementById("outbox2").value = response.completions[1].encoding;
 		document.getElementById("outbox3").value = response.completions[2].encoding;
 		document.getElementById("outbox4").value = response.completions[3].encoding;
-		document.getElementById('sound1').src="data:audio/ogg;base64,"+response.completions[0].oggFile.substring(2,response.completions[0].oggFile.length-1);
-		document.getElementById('sound2').src="data:audio/ogg;base64,"+response.completions[1].oggFile.substring(2,response.completions[1].oggFile.length-1);
-		document.getElementById('sound3').src="data:audio/ogg;base64,"+response.completions[2].oggFile.substring(2,response.completions[2].oggFile.length-1);
-		document.getElementById('sound4').src="data:audio/ogg;base64,"+response.completions[3].oggFile.substring(2,response.completions[3].oggFile.length-1);
-		document.getElementById("button").disabled = false;
 		window.encodingToMidiFile(response.completions[0].encoding, "download_outbox1");
 		window.encodingToMidiFile(response.completions[1].encoding, "download_outbox2");
 		window.encodingToMidiFile(response.completions[2].encoding, "download_outbox3");
 		window.encodingToMidiFile(response.completions[3].encoding, "download_outbox4");
+		document.getElementById('sound1').currentTime = oldDuration;
+		document.getElementById('sound2').currentTime = oldDuration;
+		document.getElementById('sound3').currentTime = oldDuration;
+		document.getElementById('sound4').currentTime = oldDuration;
+		document.getElementById("button").disabled = false;
 	}).catch(error => {
 		alert(error);
 		document.getElementById("button").disabled = false;
 	});
 }
 
+function convertDataURIToBinary(dataURI) {
+	var BASE64_MARKER = ';base64,';
+	var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
+	var base64 = dataURI.substring(base64Index);
+	var raw = window.atob(base64);
+	var rawLength = raw.length;
+	var array = new Uint8Array(new ArrayBuffer(rawLength));
+
+	for(i = 0; i < rawLength; i++) {
+		array[i] = raw.charCodeAt(i);
+	}
+	return array;
+}
+
+window.oldDuration = 0;
+
 window.encodingToMidiFile = function(encoding, outlink) {
 	var midiData = {
 	    header: {
 	    	"format": 1,
 	    	"numTracks": 10,
-	    	"ticksPerBeat": 48
+	    	"ticksPerBeat": importedMidiTicksPerBeat
 	    },
 	    tracks: [[{"deltaTime":0,"channel":0,"type":"programChange","programNumber":0}],
 	             [{"deltaTime":0,"channel":1,"type":"programChange","programNumber":40}],
@@ -120,7 +240,7 @@ window.encodingToMidiFile = function(encoding, outlink) {
 	             [{"deltaTime":0,"channel":9,"type":"programChange","programNumber":0}]]
 	};
 
-	var tokens = encoding.split(" ");
+	var tokens = encoding.trim().split(" ");
 
 	var deltaTimes = [0,0,0,0,0,0,0,0,0,0];
 	for (var i=0; i<tokens.length; i++) {
