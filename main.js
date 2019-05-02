@@ -94,58 +94,59 @@ window.importMidiFile = function(file) {
 			var inst;
 			var baseNoteOn;
 			var baseNoteOff;
+			var checkboxID;
 			if ([40,41,44,45,48,49,50,51].indexOf(event.currentInst) > -1) {
 				inst = "violin";
 				var baseNoteOn = 14*128;
 				var baseNoteOff = 15*128;
-				document.getElementById("strings").checked = true;
+				checkboxID = "strings";
 			} else if ([42,43].indexOf(event.currentInst) > -1) {
 				inst = "cello";
 				var baseNoteOn = 16*128;
 				var baseNoteOff = 17*128;
-				document.getElementById("strings").checked = true;
+				checkboxID = "strings";
 			} else if ([32,33,34,35,36,37,38,39].indexOf(event.currentInst) > -1) {
 				inst = "bass";
 				var baseNoteOn = 18*128;
 				var baseNoteOff = 19*128;
-				document.getElementById("bass").checked = true;
+				checkboxID = "bass";
 			} else if ([24,25,26,27,28,29,30,31].indexOf(event.currentInst) > -1) {
 				inst = "guitar";
 				var baseNoteOn = 20*128;
 				var baseNoteOff = 21*128;
-				document.getElementById("guitar").checked = true;
+				checkboxID = "guitar";
 			} else if ([72,73,74,75,76,77,78,79].indexOf(event.currentInst) > -1) {
 				inst = "flute";
 				var baseNoteOn = 22*128;
 				var baseNoteOff = 23*128;
-				document.getElementById("winds").checked = true;
+				checkboxID = "winds";
 			} else if ([64,65,66,67,68,69,70,71].indexOf(event.currentInst) > -1) {
 				inst = "clarinet";
 				var baseNoteOn = 24*128;
 				var baseNoteOff = 25*128;
-				document.getElementById("winds").checked = true;
+				checkboxID = "winds";
 			} else if ([56,57,58,59,60,61,62,63].indexOf(event.currentInst) > -1) {
 				inst = "trumpet";
 				var baseNoteOn = 26*128;
 				var baseNoteOff = 27*128;
-				document.getElementById("winds").checked = true;
+				checkboxID = "winds";
 			} else if ([46].indexOf(event.currentInst) > -1) {
 				inst = "harp";
 				var baseNoteOn = 28*128;
 				var baseNoteOff = 29*128;
-				document.getElementById("harp").checked = true;
+				checkboxID = "harp";
 			} else {
 				inst = "piano";
 				baseNoteOn = 8*128;
 				baseNoteOff = 0*128;
-				document.getElementById("piano").checked = true;
+				checkboxID = "piano";
 			}
 
 			if (event.channel == 9) {
 				inst = "drum";
 				var baseNoteOn = 3840;
 				var baseNoteOff = null;
-				document.getElementById("drums").checked = true;
+				checkboxID = "drums";
 			}
 			if (event.type == "noteOff" || (event.type == "noteOn" && event.velocity==0)) {
 				if (baseNoteOff !== null) {
@@ -155,6 +156,7 @@ window.importMidiFile = function(file) {
 			} else if (event.type == "noteOn" && event.velocity > 0) {
 				token = baseNoteOn + event.noteNumber;
 				encoded += token + " ";
+				document.getElementById(checkboxID).checked = true;
 			}
 		}
 
