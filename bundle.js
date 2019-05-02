@@ -73,6 +73,14 @@ window.importMidiFile = function(file) {
 			return 0;
 		})
 
+		document.getElementById("piano").checked = false;
+		document.getElementById("strings").checked = false;
+		document.getElementById("winds").checked = false;
+		document.getElementById("drums").checked = false;
+		document.getElementById("harp").checked = false;
+		document.getElementById("guitar").checked = false;
+		document.getElementById("bass").checked = false;
+
 		var encoded = "";
 		for (var i=0; i<mergedTrack.length; i++) {
 			var event = mergedTrack[i];
@@ -84,47 +92,61 @@ window.importMidiFile = function(file) {
 				encoded += token + " ";
 				timeLeftToWait -= waitTime;
 			}
-			var inst = "piano";
-			var baseNoteOn = 8*128;
-			var baseNoteOff = 0*128;
+			var inst;
+			var baseNoteOn;
+			var baseNoteOff;
 			if ([40,41,44,45,48,49,50,51].indexOf(event.currentInst) > -1) {
 				inst = "violin";
 				var baseNoteOn = 14*128;
 				var baseNoteOff = 15*128;
+				document.getElementById("strings").checked = true;
 			} else if ([42,43].indexOf(event.currentInst) > -1) {
 				inst = "cello";
 				var baseNoteOn = 16*128;
 				var baseNoteOff = 17*128;
+				document.getElementById("strings").checked = true;
 			} else if ([32,33,34,35,36,37,38,39].indexOf(event.currentInst) > -1) {
 				inst = "bass";
 				var baseNoteOn = 18*128;
 				var baseNoteOff = 19*128;
+				document.getElementById("bass").checked = true;
 			} else if ([24,25,26,27,28,29,30,31].indexOf(event.currentInst) > -1) {
 				inst = "guitar";
 				var baseNoteOn = 20*128;
 				var baseNoteOff = 21*128;
+				document.getElementById("guitar").checked = true;
 			} else if ([72,73,74,75,76,77,78,79].indexOf(event.currentInst) > -1) {
 				inst = "flute";
 				var baseNoteOn = 22*128;
 				var baseNoteOff = 23*128;
+				document.getElementById("winds").checked = true;
 			} else if ([64,65,66,67,68,69,70,71].indexOf(event.currentInst) > -1) {
 				inst = "clarinet";
 				var baseNoteOn = 24*128;
 				var baseNoteOff = 25*128;
+				document.getElementById("winds").checked = true;
 			} else if ([56,57,58,59,60,61,62,63].indexOf(event.currentInst) > -1) {
 				inst = "trumpet";
 				var baseNoteOn = 26*128;
 				var baseNoteOff = 27*128;
+				document.getElementById("winds").checked = true;
 			} else if ([46].indexOf(event.currentInst) > -1) {
 				inst = "harp";
 				var baseNoteOn = 28*128;
 				var baseNoteOff = 29*128;
+				document.getElementById("harp").checked = true;
+			} else {
+				inst = "piano";
+				baseNoteOn = 8*128;
+				baseNoteOff = 0*128;
+				document.getElementById("piano").checked = true;
 			}
 
 			if (event.channel == 9) {
 				inst = "drum";
 				var baseNoteOn = 3840;
 				var baseNoteOff = null;
+				document.getElementById("drums").checked = true;
 			}
 			if (event.type == "noteOff" || (event.type == "noteOn" && event.velocity==0)) {
 				if (baseNoteOff !== null) {
