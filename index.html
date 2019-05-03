@@ -19,6 +19,10 @@
 				from {width: 0%;}
 				to {width: 100%;}
 			}
+			.quarter {
+				display: inline-block;
+				width: 24%;
+			}
 		</style>
 	</head>
 	<body style="text-align: center;">
@@ -61,10 +65,10 @@
 			<span id="loader-outer"><span id="loader-inner"></span></span>
 		</p>
 		<p>
-			<span style="display: inline-block; width: 24%"><input type="button" value="Copy upwards" onclick="copyup('outbox1')" id="button"/></span><span style="display: inline-block; width: 24%"><input type="button" value="Copy upwards" onclick="copyup('outbox2')" id="button"/></span><span style="display: inline-block; width: 24%"><input type="button" value="Copy upwards" onclick="copyup('outbox3')" id="button"/></span><span style="display: inline-block; width: 24%"><input type="button" value="Copy upwards" onclick="copyup('outbox4')" id="button"/></span>
+			<span class="quarter"><input type="button" value="Copy upwards" onclick="copyup('outbox1')" id="button"/></span><span class="quarter"><input type="button" value="Copy upwards" onclick="copyup('outbox2')" id="button"/></span><span class="quarter"><input type="button" value="Copy upwards" onclick="copyup('outbox3')" id="button"/></span><span class="quarter"><input type="button" value="Copy upwards" onclick="copyup('outbox4')" id="button"/></span>
 			<textarea onchange="encodingToMidiFile(this.value, 'download_outbox1')" id="outbox1" style="width:24%; height: 33%"></textarea><textarea onchange="encodingToMidiFile(this.value, 'download_outbox2')" id="outbox2" style="width:24%; height: 33%"></textarea><textarea onchange="encodingToMidiFile(this.value, 'download_outbox3')" id="outbox3" style="width:24%; height: 33%"></textarea><textarea onchange="encodingToMidiFile(this.value, 'download_outbox4')" id="outbox4" style="width:24%; height: 33%"></textarea>
-			<span style="display: inline-block; width: 24%"><a href="javascript:;" id="download_outbox1">export midi</a></span><span style="display: inline-block; width: 24%"><a href="javascript:;" id="download_outbox2">export midi</a></span><span style="display: inline-block; width: 24%"><a href="javascript:;" id="download_outbox3">export midi</a></span><span style="display: inline-block; width: 24%"><a href="javascript:;" id="download_outbox4">export midi</a></span>
-			<span style="display: inline-block; width: 24%"><audio controls="controls" id="sound1"/></span><span style="display: inline-block; width: 24%"><audio controls="controls" id="sound2"/></span><span style="display: inline-block; width: 24%"><audio controls="controls" id="sound3"/></span><span style="display: inline-block; width: 24%"><audio controls="controls" id="sound4"/></span>
+			<span class="quarter"><a href="javascript:;" id="download_outbox1">export midi</a></span><span class="quarter"><a href="javascript:;" id="download_outbox2">export midi</a></span><span class="quarter"><a href="javascript:;" id="download_outbox3">export midi</a></span><span class="quarter"><a href="javascript:;" id="download_outbox4">export midi</a></span>
+			<span class="quarter"><audio controls="controls" id="sound1" style="width: 98%"/></span><span class="quarter"><audio controls="controls" id="sound2" style="width: 98%"/></span><span class="quarter"><audio controls="controls" id="sound3" style="width: 98%"/></span><span class="quarter"><audio controls="controls" id="sound4" style="width: 98%"/></span>
 		</p>
 		<script src="bundle.js"></script>
 	</body>
