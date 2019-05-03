@@ -23,6 +23,9 @@
 				display: inline-block;
 				width: 24%;
 			}
+			input[type="number"] {
+				width: 60px;
+			}
 		</style>
 	</head>
 	<body style="text-align: center;">
@@ -58,9 +61,9 @@
 			<label for="harp">Harp:</label><input type="checkbox" id="harp"/>&nbsp;
 			<label for="guitar">Guitar:</label><input type="checkbox" id="guitar" checked="checked"/>&nbsp;
 			<label for="bass">Bass:</label><input type="checkbox" id="bass" checked="checked"/>&nbsp;
-			Temperature: <input id="temperature" value="1" size="5"/>&nbsp;
-			Truncation: <input id="truncation" value="27" size="5"/>&nbsp;
-			Generation Length: <input id="generationLength" value="225" size="5"/>&nbsp;
+			Temperature: <input id="temperature" value="1" type="number"/>&nbsp;
+			Truncation: <input id="truncation" value="27" type="number"/>&nbsp;
+			Generation Length: <input id="generationLength" value="225" type="number" max="400"/>&nbsp;
 			<input type="button" value="Extend!" onclick="extend()" id="button"/>&nbsp;
 			<span id="loader-outer"><span id="loader-inner"></span></span>
 		</p>

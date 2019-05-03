@@ -3,18 +3,14 @@ var writeMidi = require('midi-file').writeMidi;
 
 var inst_to_track = {"piano":0,"violin":1,"cello":2,"bass":3,"guitar":4,"flute":5,"clarinet":6,"trumpet":7,"harp":8,"drum":9};
 
-var importedMidiTicksPerBeat = 48; // Default value if no MIDI imported
-
 window.copyup = function(elemid) {
 	document.getElementById("inbox").value = document.getElementById(elemid).value.trim();
 	window.encodingToMidiFile(document.getElementById("inbox").value, "download_inbox");
 }
 
 window.importMidi = function() {
-	alert("For best results:\n\n" +
-		  "1) Assign different tracks to different instruments out of Piano, Violin, Cello, Bass, Guitar, Flute, Clarinet, Trumpet, Harp, and Drums.\n" +
-		  "2) If the notes on your MIDI are not perfectly timed, convert it to have a ticks-per-beat setting of 48.\n\n" +
-		  "The base MIDI linked to the right is set up to follow both these constraints.\n");
+	alert("For best results, assign different tracks to different instruments out of Piano, Violin, Cello, Bass, Guitar, Flute, Clarinet, Trumpet, Harp, and Drums.\n" +
+		  "The base MIDI linked to the right is already set up with these tracks.\n");
 	javascript:document.getElementById('file-input').click();
 }
 window.importMidiFile = function(file) {
@@ -27,28 +23,6 @@ window.importMidiFile = function(file) {
 		var midiData = parseMidi(content);
 		console.log(midiData);
 
-		importedMidiTicksPerBeat = midiData.header.ticksPerBeat;
-
-		var allDeltaTimes = new Set();
-		allDeltaTimes.add(importedMidiTicksPerBeat);
-		
-		for (var i=0; i<midiData.tracks.length; i++) {
-			for (var j=0; j<midiData.tracks[i].length; j++) {
-				allDeltaTimes.add(midiData.tracks[i][j].deltaTime);
-			}
-		}
-		var divideAllDeltaTimesBy = findGCFofList(Array.from(allDeltaTimes));
-		console.log(allDeltaTimes, divideAllDeltaTimesBy);
-		console.log(importedMidiTicksPerBeat);
-		importedMidiTicksPerBeat /= divideAllDeltaTimesBy;
-		console.log(importedMidiTicksPerBeat);
-		var multiplyAllDeltaTimesBy = 1;
-		if (importedMidiTicksPerBeat < 48) {
-			multiplyAllDeltaTimesBy = Math.round(48/importedMidiTicksPerBeat);
-		}
-		importedMidiTicksPerBeat *= multiplyAllDeltaTimesBy;
-		console.log(importedMidiTicksPerBeat);
-
 		var mergedTrack = [];
 		var originalOrder = 0;
 		for (var i=0; i<midiData.tracks.length; i++) {
@@ -59,8 +33,8 @@ window.importMidiFile = function(file) {
 				if (event.type == "programChange") {
 					currentInst = event.programNumber;
 				}
-				startTime += (event.deltaTime / divideAllDeltaTimesBy) * multiplyAllDeltaTimesBy;
-				event.startTime = startTime;
+				startTime += event.deltaTime;
+				event.startTime = Math.round(startTime * 48 / midiData.header.ticksPerBeat);
 				event.originalOrder = originalOrder;
 				event.currentInst = currentInst;
 				mergedTrack.push(event);
@@ -168,14 +142,6 @@ window.importMidiFile = function(file) {
 	}
 }
 
-function GCF(a, b) {
-    if (b === 0) return a;
-    else         return GCF(b, a % b);
-}
-function findGCFofList(list) {
-    return list.reduce(GCF);
-}
-
 var ding = new Audio('chord.wav');
 ding.volume = 0.1;
 
@@ -261,7 +227,7 @@ window.encodingToMidiFile = function(encoding, outlink) {
 	    header: {
 	    	"format": 1,
 	    	"numTracks": 10,
-	    	"ticksPerBeat": importedMidiTicksPerBeat
+	    	"ticksPerBeat": 48
 	    },
 	    tracks: [[{"deltaTime":0,"channel":0,"type":"programChange","programNumber":0}],
 	             [{"deltaTime":0,"channel":1,"type":"programChange","programNumber":40}],
