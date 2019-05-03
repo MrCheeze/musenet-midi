@@ -11,7 +11,10 @@ window.copyup = function(elemid) {
 }
 
 window.importMidi = function() {
-	alert("If the tempo sounds very wrong, change the MIDI ticks-per-beat to 48 using your MIDI editor of choice.");
+	alert("For best results:\n\n" +
+		  "1) Assign different tracks to different instruments out of Piano, Violin, Cello, Bass, Guitar, Flute, Clarinet, Trumpet, Harp, and Drums.\n" +
+		  "2) If the notes on your MIDI are not perfectly timed, convert it to have a ticks-per-beat setting of 48.\n\n" +
+		  "The base MIDI linked to the right is set up to follow both these constraints.\n");
 	javascript:document.getElementById('file-input').click();
 }
 window.importMidiFile = function(file) {
@@ -173,8 +176,12 @@ function findGCFofList(list) {
     return list.reduce(GCF);
 }
 
+var ding = new Audio('chord.wav');
+ding.volume = 0.1;
+
 window.extend = function() {
 	document.getElementById("button").disabled = true;
+	document.getElementById("loader-inner").style.animation = "progress 60s linear both";
 	fetch("https://musenet.openai.com/sample", {
 		"method": "POST",
 		"headers": {
@@ -201,7 +208,8 @@ window.extend = function() {
 								   document.getElementById('sound2').duration,
 								   document.getElementById('sound3').duration,
 								   document.getElementById('sound4').duration);
-		if (isNaN(oldDuration) || !isFinite(oldDuration)) {
+		window.oldDuration -= 5;
+		if (isNaN(oldDuration) || !isFinite(oldDuration) || oldDuration < 0) {
 			oldDuration = 0;
 		}
 		//need to convert from dataURI to blob to avoid firefox issue
@@ -221,10 +229,14 @@ window.extend = function() {
 		document.getElementById('sound2').currentTime = oldDuration;
 		document.getElementById('sound3').currentTime = oldDuration;
 		document.getElementById('sound4').currentTime = oldDuration;
+		ding.play();
 		document.getElementById("button").disabled = false;
+		document.getElementById("loader-inner").style.animation = "none";
 	}).catch(error => {
-		alert(error);
+		ding.play();
 		document.getElementById("button").disabled = false;
+		document.getElementById("loader-inner").style.animation = "none";
+		alert(error);
 	});
 }
 
@@ -298,7 +310,7 @@ window.encodingToMidiFile = function(encoding, outlink) {
 
 	var midiBlob = new Blob([new Uint8Array(writeMidi(midiData))], {type: "audio/midi"});
 	document.getElementById(outlink).href = URL.createObjectURL(midiBlob);
-	document.getElementById(outlink).download = "output.mid";
+	document.getElementById(outlink).target = "_blank";
 }
 window.encodingToMidiFile(document.getElementById("inbox").value, "download_inbox");
 window.encodingToMidiFile(document.getElementById("outbox1").value, "download_outbox1");
