@@ -245,6 +245,7 @@ window.encodingToMidiFile = function(encoding, outlink) {
 	var tokens = encoding.trim().split(" ");
 
 	var deltaTimes = [0,0,0,0,0,0,0,0,0,0];
+	var usedDrumNotes = new Set();
 	for (var i=0; i<tokens.length; i++) {
 		var token = tokens[i];
 		var parsedToken = parseToken(token);
@@ -257,6 +258,9 @@ window.encodingToMidiFile = function(encoding, outlink) {
 				"noteNumber": parsedToken.pitch,
 				"velocity": parsedToken.volume
 			});
+			if (parsedToken.instrument == "drum") {
+				usedDrumNotes.add(parsedToken.pitch);
+			}
 			deltaTimes[trackIndex] = 0;
 		} else if (parsedToken.type == "wait") {
 			for (var j=0; j<10; j++) {
@@ -264,13 +268,24 @@ window.encodingToMidiFile = function(encoding, outlink) {
 			}
 		}
 	}
+	for (let pitch of usedDrumNotes) {
+		midiData.tracks[9].push({
+			"deltaTime": deltaTimes[9],
+			"channel": 9,
+			"type": "noteOff",
+			"noteNumber": pitch,
+			"velocity": 0
+		});
+		deltaTimes[9] = 0;
+	}
 
 	for (var i=0; i<midiData.tracks.length; i++) {
 		midiData.tracks[i].push({
-			"deltaTime": deltaTimes[trackIndex],
+			"deltaTime": deltaTimes[i],
 			"meta": true,
 			"type": "endOfTrack"
 		});
+		deltaTimes[i] = 0;
 	}
 
 	console.log(midiData);
