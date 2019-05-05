@@ -27,16 +27,11 @@ window.importMidiFile = function(file) {
 		var originalOrder = 0;
 		for (var i=0; i<midiData.tracks.length; i++) {
 			var startTime = 0;
-			var currentInst = 0;
 			for (var j=0; j<midiData.tracks[i].length; j++) {
 				var event = midiData.tracks[i][j];
-				if (event.type == "programChange") {
-					currentInst = event.programNumber;
-				}
 				startTime += event.deltaTime;
 				event.startTime = Math.round(startTime * 48 / midiData.header.ticksPerBeat);
 				event.originalOrder = originalOrder;
-				event.currentInst = currentInst;
 				mergedTrack.push(event);
 				originalOrder++;
 			}
@@ -58,6 +53,7 @@ window.importMidiFile = function(file) {
 		document.getElementById("bass").checked = false;
 
 		var encoded = "";
+		var currentInsts = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 		for (var i=0; i<mergedTrack.length; i++) {
 			var event = mergedTrack[i];
 			var deltaTime = (i == 0) ? event.startTime : (event.startTime - mergedTrack[i-1].startTime);
@@ -68,46 +64,51 @@ window.importMidiFile = function(file) {
 				encoded += token + " ";
 				timeLeftToWait -= waitTime;
 			}
+			
+			if (event.type == "programChange") {
+				currentInsts[event.channel] = event.programNumber;
+			}
+			var currentInst = currentInsts[event.channel];
 			var inst;
 			var baseNoteOn;
 			var baseNoteOff;
 			var checkboxID;
-			if ([40,41,44,45,48,49,50,51].indexOf(event.currentInst) > -1) {
+			if ([40,41,44,45,48,49,50,51].indexOf(currentInst) > -1) {
 				inst = "violin";
 				var baseNoteOn = 14*128;
 				var baseNoteOff = 15*128;
 				checkboxID = "strings";
-			} else if ([42,43].indexOf(event.currentInst) > -1) {
+			} else if ([42,43].indexOf(currentInst) > -1) {
 				inst = "cello";
 				var baseNoteOn = 16*128;
 				var baseNoteOff = 17*128;
 				checkboxID = "strings";
-			} else if ([32,33,34,35,36,37,38,39].indexOf(event.currentInst) > -1) {
+			} else if ([32,33,34,35,36,37,38,39].indexOf(currentInst) > -1) {
 				inst = "bass";
 				var baseNoteOn = 18*128;
 				var baseNoteOff = 19*128;
 				checkboxID = "bass";
-			} else if ([24,25,26,27,28,29,30,31].indexOf(event.currentInst) > -1) {
+			} else if ([24,25,26,27,28,29,30,31].indexOf(currentInst) > -1) {
 				inst = "guitar";
 				var baseNoteOn = 20*128;
 				var baseNoteOff = 21*128;
 				checkboxID = "guitar";
-			} else if ([72,73,74,75,76,77,78,79].indexOf(event.currentInst) > -1) {
+			} else if ([72,73,74,75,76,77,78,79].indexOf(currentInst) > -1) {
 				inst = "flute";
 				var baseNoteOn = 22*128;
 				var baseNoteOff = 23*128;
 				checkboxID = "winds";
-			} else if ([64,65,66,67,68,69,70,71].indexOf(event.currentInst) > -1) {
+			} else if ([64,65,66,67,68,69,70,71].indexOf(currentInst) > -1) {
 				inst = "clarinet";
 				var baseNoteOn = 24*128;
 				var baseNoteOff = 25*128;
 				checkboxID = "winds";
-			} else if ([56,57,58,59,60,61,62,63].indexOf(event.currentInst) > -1) {
+			} else if ([56,57,58,59,60,61,62,63].indexOf(currentInst) > -1) {
 				inst = "trumpet";
 				var baseNoteOn = 26*128;
 				var baseNoteOff = 27*128;
 				checkboxID = "winds";
-			} else if ([46].indexOf(event.currentInst) > -1) {
+			} else if ([46].indexOf(currentInst) > -1) {
 				inst = "harp";
 				var baseNoteOn = 28*128;
 				var baseNoteOff = 29*128;
