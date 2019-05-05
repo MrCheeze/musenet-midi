@@ -75,43 +75,43 @@ window.importMidiFile = function(file) {
 			var checkboxID;
 			if ([40,41,44,45,48,49,50,51].indexOf(currentInst) > -1) {
 				inst = "violin";
-				var baseNoteOn = 14*128;
-				var baseNoteOff = 15*128;
+				baseNoteOn = 14*128;
+				baseNoteOff = 15*128;
 				checkboxID = "strings";
 			} else if ([42,43].indexOf(currentInst) > -1) {
 				inst = "cello";
-				var baseNoteOn = 16*128;
-				var baseNoteOff = 17*128;
+				baseNoteOn = 16*128;
+				baseNoteOff = 17*128;
 				checkboxID = "strings";
 			} else if ([32,33,34,35,36,37,38,39].indexOf(currentInst) > -1) {
 				inst = "bass";
-				var baseNoteOn = 18*128;
-				var baseNoteOff = 19*128;
+				baseNoteOn = 18*128;
+				baseNoteOff = 19*128;
 				checkboxID = "bass";
 			} else if ([24,25,26,27,28,29,30,31].indexOf(currentInst) > -1) {
 				inst = "guitar";
-				var baseNoteOn = 20*128;
-				var baseNoteOff = 21*128;
+				baseNoteOn = 20*128;
+				baseNoteOff = 21*128;
 				checkboxID = "guitar";
 			} else if ([72,73,74,75,76,77,78,79].indexOf(currentInst) > -1) {
 				inst = "flute";
-				var baseNoteOn = 22*128;
-				var baseNoteOff = 23*128;
+				baseNoteOn = 22*128;
+				baseNoteOff = 23*128;
 				checkboxID = "winds";
 			} else if ([64,65,66,67,68,69,70,71].indexOf(currentInst) > -1) {
 				inst = "clarinet";
-				var baseNoteOn = 24*128;
-				var baseNoteOff = 25*128;
+				baseNoteOn = 24*128;
+				baseNoteOff = 25*128;
 				checkboxID = "winds";
 			} else if ([56,57,58,59,60,61,62,63].indexOf(currentInst) > -1) {
 				inst = "trumpet";
-				var baseNoteOn = 26*128;
-				var baseNoteOff = 27*128;
+				baseNoteOn = 26*128;
+				baseNoteOff = 27*128;
 				checkboxID = "winds";
 			} else if ([46].indexOf(currentInst) > -1) {
 				inst = "harp";
-				var baseNoteOn = 28*128;
-				var baseNoteOff = 29*128;
+				baseNoteOn = 28*128;
+				baseNoteOff = 29*128;
 				checkboxID = "harp";
 			} else {
 				inst = "piano";
@@ -122,8 +122,8 @@ window.importMidiFile = function(file) {
 
 			if (event.channel == 9) {
 				inst = "drum";
-				var baseNoteOn = 3840;
-				var baseNoteOff = null;
+				baseNoteOn = 3840;
+				baseNoteOff = null;
 				checkboxID = "drums";
 			}
 			if (event.type == "noteOff" || (event.type == "noteOn" && event.velocity==0)) {
