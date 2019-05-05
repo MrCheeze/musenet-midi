@@ -64,7 +64,7 @@ window.importMidiFile = function(file) {
 				encoded += token + " ";
 				timeLeftToWait -= waitTime;
 			}
-			
+
 			if (event.type == "programChange") {
 				currentInsts[event.channel] = event.programNumber;
 			}
@@ -287,6 +287,8 @@ window.encodingToMidiFile = function(encoding, outlink) {
 		});
 		deltaTimes[i] = 0;
 	}
+
+	midiData.tracks = midiData.tracks.filter(track => track.length > 2);
 
 	console.log(midiData);
 
