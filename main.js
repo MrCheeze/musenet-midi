@@ -168,7 +168,8 @@ window.extend = function() {
 			"encoding":document.getElementById("inbox").value,
 			"temperature":parseFloat(document.getElementById("temperature").value),
 			"truncation":parseFloat(document.getElementById("truncation").value),
-			"generationLength":parseFloat(document.getElementById("generationLength").value)
+			"generationLength":parseFloat(document.getElementById("generationLength").value),
+			"audioFormat": document.getElementById("format").value
 		})
 	}).then(res => res.json()).then(function (response) {
 		window.oldDuration = Math.min(document.getElementById('sound1').duration,
@@ -180,10 +181,16 @@ window.extend = function() {
 			oldDuration = 0;
 		}
 		//need to convert from dataURI to blob to avoid firefox issue
-		document.getElementById('sound1').src=URL.createObjectURL(new Blob([convertDataURIToBinary("data:audio/ogg;base64,"+response.completions[0].oggFile.substring(2,response.completions[0].oggFile.length-1))], {type : 'audio/ogg'}));
-		document.getElementById('sound2').src=URL.createObjectURL(new Blob([convertDataURIToBinary("data:audio/ogg;base64,"+response.completions[1].oggFile.substring(2,response.completions[1].oggFile.length-1))], {type : 'audio/ogg'}));
-		document.getElementById('sound3').src=URL.createObjectURL(new Blob([convertDataURIToBinary("data:audio/ogg;base64,"+response.completions[2].oggFile.substring(2,response.completions[2].oggFile.length-1))], {type : 'audio/ogg'}));
-		document.getElementById('sound4').src=URL.createObjectURL(new Blob([convertDataURIToBinary("data:audio/ogg;base64,"+response.completions[3].oggFile.substring(2,response.completions[3].oggFile.length-1))], {type : 'audio/ogg'}));
+		var format = "audio/mp3";
+		var audioKey = "audioFile";
+		if (response.completions[0].oggFile) {
+			format = "audio/ogg";
+			audioKey = "oggFile";
+		}
+		document.getElementById('sound1').src=URL.createObjectURL(new Blob([convertDataURIToBinary("data:"+format+";base64,"+response.completions[0][audioKey].substring(2,response.completions[0][audioKey].length-1))], {type : format}));
+		document.getElementById('sound2').src=URL.createObjectURL(new Blob([convertDataURIToBinary("data:"+format+";base64,"+response.completions[1][audioKey].substring(2,response.completions[1][audioKey].length-1))], {type : format}));
+		document.getElementById('sound3').src=URL.createObjectURL(new Blob([convertDataURIToBinary("data:"+format+";base64,"+response.completions[2][audioKey].substring(2,response.completions[2][audioKey].length-1))], {type : format}));
+		document.getElementById('sound4').src=URL.createObjectURL(new Blob([convertDataURIToBinary("data:"+format+";base64,"+response.completions[3][audioKey].substring(2,response.completions[3][audioKey].length-1))], {type : format}));
 		document.getElementById("outbox1").value = response.completions[0].encoding;
 		document.getElementById("outbox2").value = response.completions[1].encoding;
 		document.getElementById("outbox3").value = response.completions[2].encoding;
