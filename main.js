@@ -2,6 +2,7 @@ var parseMidi = require('midi-file').parseMidi;
 var writeMidi = require('midi-file').writeMidi;
 
 var inst_to_track = {"piano":0,"violin":1,"cello":2,"bass":3,"guitar":4,"flute":5,"clarinet":6,"trumpet":7,"harp":8,"drum":9};
+var inst_to_instgroup = {"piano":"piano","violin":"strings","cello":"strings","bass":"bass","guitar":"guitar","flute":"winds","clarinet":"winds","trumpet":"winds","harp":"harp","drums":"drums"};
 
 window.copyup = function(elemid) {
 	document.getElementById("inbox").value = document.getElementById(elemid).value.trim();
@@ -169,6 +170,18 @@ window.importMidiFileOpenAI = function(file) {
 		}).then(res => res.json()).then(function (response) {
 			document.getElementById("inbox").value = response.completions[0].encoding;
 			window.encodingToMidiFile(document.getElementById("inbox").value, "download_inbox");
+
+			document.getElementById("piano").checked = false;
+			document.getElementById("strings").checked = false;
+			document.getElementById("winds").checked = false;
+			document.getElementById("drums").checked = false;
+			document.getElementById("harp").checked = false;
+			document.getElementById("guitar").checked = false;
+			document.getElementById("bass").checked = false;
+			
+			for (var i=0; i<response.completions[0].tracks.length; i++) {
+				document.getElementById(inst_to_instgroup[response.completions[0].tracks[i].instrument]).checked = true;
+			}
 			
 			stopLoading();
 		}).catch(error => {
@@ -224,13 +237,9 @@ window.extend = function() {
 			"audioFormat": document.getElementById("format").value
 		})
 	}).then(res => res.json()).then(function (response) {
-		window.oldDuration = Math.min(document.getElementById('sound1').duration,
-								   document.getElementById('sound2').duration,
-								   document.getElementById('sound3').duration,
-								   document.getElementById('sound4').duration);
-		window.oldDuration -= 5;
-		if (isNaN(oldDuration) || !isFinite(oldDuration) || oldDuration < 0) {
-			oldDuration = 0;
+		var seekTo = window.oldDuration - 5;
+		if (isNaN(seekTo) || !isFinite(seekTo) || seekTo < 0) {
+			seekTo = 0;
 		}
 		//need to convert from dataURI to blob to avoid firefox issue
 		var format = "audio/mp3";
@@ -251,10 +260,10 @@ window.extend = function() {
 		window.encodingToMidiFile(response.completions[1].encoding, "download_outbox2");
 		window.encodingToMidiFile(response.completions[2].encoding, "download_outbox3");
 		window.encodingToMidiFile(response.completions[3].encoding, "download_outbox4");
-		document.getElementById('sound1').currentTime = oldDuration;
-		document.getElementById('sound2').currentTime = oldDuration;
-		document.getElementById('sound3').currentTime = oldDuration;
-		document.getElementById('sound4').currentTime = oldDuration;
+		document.getElementById('sound1').currentTime = seekTo;
+		document.getElementById('sound2').currentTime = seekTo;
+		document.getElementById('sound3').currentTime = seekTo;
+		document.getElementById('sound4').currentTime = seekTo;
 		stopLoading();
 	}).catch(error => {
 		stopLoading();
@@ -275,8 +284,6 @@ function convertDataURIToBinary(dataURI) {
 	}
 	return array;
 }
-
-window.oldDuration = 0;
 
 window.encodingToMidiFile = function(encoding, outlink) {
 	var midiData = {
@@ -303,6 +310,7 @@ window.encodingToMidiFile = function(encoding, outlink) {
 	}
 
 	var deltaTimes = [0,0,0,0,0,0,0,0,0,0];
+	var totalDelay = 0;
 	var usedDrumNotes = new Set();
 	for (var i=0; i<tokens.length; i++) {
 		var token = tokens[i];
@@ -324,6 +332,7 @@ window.encodingToMidiFile = function(encoding, outlink) {
 			for (var j=0; j<10; j++) {
 				deltaTimes[j] += parsedToken.delay;
 			}
+			totalDelay += parsedToken.delay;
 			for (let pitch of usedDrumNotes) {
 				midiData.tracks[9].push({
 					"deltaTime": deltaTimes[9],
@@ -375,7 +384,11 @@ window.encodingToMidiFile = function(encoding, outlink) {
 	var objectUrl = URL.createObjectURL(midiBlob);
 	document.getElementById(outlink).href = objectUrl;
 	document.getElementById(outlink).target = "_blank";
-	document.getElementById(outlink).download = new Date().toISOString().replace("T","-").replaceAll(":","-").replace(/\..+/,"")+".mid"
+	document.getElementById(outlink).download = new Date().toISOString().replace("T","-").replaceAll(":","-").replace(/\..+/,"")+".mid";
+	if (outlink == "download_inbox") {
+		window.oldDuration = totalDelay / 100;
+		console.log(window.oldDuration);
+	}
 }
 window.encodingToMidiFile(document.getElementById("inbox").value, "download_inbox");
 window.encodingToMidiFile(document.getElementById("outbox1").value, "download_outbox1");
