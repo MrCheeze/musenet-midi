@@ -34,7 +34,8 @@
 	<body style="text-align: center;">
 		<p>
 			<input id="file-input" type="file" style="display: none;" onchange="importMidiFile(this.files[0])"/>
-			<a href="javascript:importMidi()">import midi</a> - <a href="javascript:;" id="download_inbox">export midi</a> -- <a href="base.mid" target="_blank">base midi</a> - <a href="https://cdn.discordapp.com/attachments/194627386141179904/573188521863413780/musenet_tutorial.png" target="_blank">guide</a>
+			<input id="file-input-openai" type="file" style="display: none;" onchange="importMidiFileOpenAI(this.files[0])"/>
+			<a href="javascript:importMidi()">import midi</a> - <a href="javascript:importMidiOpenAI()" id="import-openai-link">import midi (openai)</a> - <a href="javascript:;" id="download_inbox">export midi</a> -- <a href="base.mid" target="_blank">base midi</a> - <a href="https://cdn.discordapp.com/attachments/194627386141179904/573188521863413780/musenet_tutorial.png" target="_blank">guide</a>
 			<textarea onchange="encodingToMidiFile(this.value, 'download_inbox')" id="inbox" style="width:96%; height: 33%"></textarea>
 		</p>
 		<p>
@@ -661,9 +662,9 @@
 			<label for="harp">Harp:</label><input type="checkbox" id="harp"/>&nbsp;
 			<label for="guitar">Guitar:</label><input type="checkbox" id="guitar" checked="checked"/>&nbsp;
 			<label for="bass">Bass:</label><input type="checkbox" id="bass" checked="checked"/>&nbsp;
-			Temperature: <input id="temperature" value="1" type="number"/>&nbsp;
-			Truncation: <input id="truncation" value="27" type="number"/>&nbsp;
-			Generation Length: <input id="generationLength" value="225" type="number" max="1000"/>&nbsp;
+			Temperature: <input id="temperature" value="1" size="1"/>&nbsp;
+			Truncation: <input id="truncation" value="27" size="1"/>&nbsp;
+			Generation Length: <input id="generationLength" value="225" size="1"/>&nbsp;
 			Preview:
 			<select id="format">
 				<option value="ogg">ogg</option>

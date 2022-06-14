@@ -11,8 +11,14 @@ window.copyup = function(elemid) {
 
 window.importMidi = function() {
 	alert("For best results, assign different tracks to different instruments out of Piano, Violin, Cello, Bass, Guitar, Flute, Clarinet, Trumpet, Harp, and Drums.\n" +
-		  "The base MIDI linked to the right is already set up with these tracks.\n");
+		  "The base MIDI linked to the right is already set up with these tracks.");
 	javascript:document.getElementById('file-input').click();
+}
+window.importMidiOpenAI = function() {
+	alert("For best results, use a tempo of 62.5, 125, or 250.");
+	if (!window.isLoading) {
+		javascript:document.getElementById('file-input-openai').click();
+	}
 }
 window.importMidiFile = function(file) {
 	var reader = new FileReader();
@@ -22,7 +28,6 @@ window.importMidiFile = function(file) {
 	reader.onload = readerEvent => {
 		var content = new Uint8Array(readerEvent.target.result);
 		var midiData = parseMidi(content);
-		console.log(midiData);
 
 		var mergedTrack = [];
 		var originalOrder = 0;
@@ -143,13 +148,55 @@ window.importMidiFile = function(file) {
 		window.encodingToMidiFile(document.getElementById("inbox").value, "download_inbox");
 	}
 }
+window.importMidiFileOpenAI = function(file) {
+	var reader = new FileReader();
+	reader.readAsDataURL(file);
+	window.file = file;
+	
+	startLoading();
+
+	reader.onload = readerEvent => {
+		var b64content = "b'" + readerEvent.target.result.split(',')[1] + "'";
+		console.log(b64content);
+		fetch("https://musenet.openai.com/midi", {
+			"method": "POST",
+			"headers": {
+				"Content-Type": "application/json"
+			},
+			"body": JSON.stringify({
+				"midi": b64content,
+				"audioFormat": document.getElementById("format").value
+			})
+		}).then(res => res.json()).then(function (response) {
+			document.getElementById("inbox").value = response.completions[0].encoding;
+			window.encodingToMidiFile(document.getElementById("inbox").value, "download_inbox");
+			
+			stopLoading();
+		}).catch(error => {
+			stopLoading();
+			alert(error);
+		});
+	}
+}
 
 var ding = new Audio('chord.wav');
 ding.volume = 0.1;
+window.isLoading = false;
+
+function startLoading() {
+	document.getElementById("button").disabled = true;
+	window.isLoading = true;
+	document.getElementById("loader-inner").style.animation = "progress 60s linear both";
+}
+function stopLoading() {
+	ding.play();
+	document.getElementById("button").disabled = false;
+	window.isLoading = false;
+	document.getElementById("loader-inner").style.animation = "none";
+}
 
 window.extend = function() {
-	document.getElementById("button").disabled = true;
-	document.getElementById("loader-inner").style.animation = "progress 60s linear both";
+	startLoading();
 	var genreList = ["chopin","mozart","rachmaninoff","ladygaga","country","disney","jazz","bach","beethoven","journey","thebeatles","video","broadway","franksinatra","bluegrass","tchaikovsky","liszt","everything","ragtime","andrehazes","cocciante","thecranberries","ligabue","metallica","traffic","philcollins","nineinchnails","thepretenders","sugarray","grandfunkrailroad","ron","ellington","fleetwoodmac","thebeachboys","kool & the gang","foreigner","tlc","scottjames","benfoldsfive","smashmouth","oasis","allsaints","donnasummer","weezer","bjork","mariahcarey","berte","cheaptrick","caroleking","thecars","gganderson","robertpalmer","zucchero","alicecooper","vanhalen","brucehornsby","coolio","jimmybuffett","lobo","badcompany","eminem","creedenceclearwaterrevival","deeppurple","shearinggeorge","robbiewilliams","dalla","ub40","lindaronstadt","sinatra","inxs","jonimitchell","michaeljackson","last","devo","shaniatwain","korn","brooksgarth","sweet","thewho","roxette","bowiedavid","beegees","renefroger","mina","estefangloria","mccartney","theventures","carboni","simplyred","santana","jewel","meatloaf","giorgia","nofx","rickymartin","thecure","thetemptations","tozzi","beck","eiffel65","jenniferlopez","reelbigfish","patsycline","richardcliff","styx","acdc","brucespringsteen","michaelgeorge","blondie","pinkfloyd","oldfieldmike","redhotchilipeppers","therollingstones","morandi","heart","robertaflack","pantera","alabama","jethrotull","hanson","mosch","ludwigvanbeethoven","dvorak","chrisrea","guns n' roses","duranduran","ericclapton","bettemidler","bwitched","gordonlightfoot","thegrassroots","chicago","whitezombie","michaelbolton","paulsimon","marillion","thepointersisters","theanimals","cher","haydn","aerosmith","supertramp","littleriverband","america","tonyorlando","tompetty","thecorrs","aliceinchains","kiss","prince","toto","vanmorrison","wagner","cashjohnny","annielennox","enya","thedoobiebrothers","thetragicallyhip","rush","laurapausini","stevemillerband","simonandgarfunkel","fiorellamannoia","olivianewton-john","carlysimon","elvispresley","vangelis","bobdylan","bbking","vengaboys","paoli","thehollies","alainsouchon","pooh","raf","fiorello","lionelrichie","jimihendrix","theeverlybrothers","limpbizkit","donhenley","georgeharrison","threedognight","johnmellencamp","carpenters","raycharles","basie","billyocean","scorpions","royorbison","whitneyhouston","ironmaiden","jovanotti","alanjackson","barrymanilow","hueylewis","kennyloggins","chopinfrederic","talkingheads","themonkees","rem","jeanmicheljarre","michelezarrillo","eurythmics","thedoors","guesswho","miller","thefourseasons","matiabazar","tompettyandtheheartbreakers","chickcorea","scottjoplin","amedeominghi","bryanadams","paulaabdul","rossivasco","billyjoel","daniele","claudedebussy","gilbert & sullivan","chakakhan","nirvana","garbage","andreabocelli","johnnyrivers","emerson, lake & palmer","theallmanbrothersband","zappa","boston","mango","barbrastreisand","willsmith","ozzyosbourne","janetjackson","antonellovenditti","u2","humperdinckengelbert","jamiroquai","zero","chuckberry","spicegirls","ledzeppelin","masini","thekinks","eagles","billyidol","alanismorissette","joecocker","jimcroce","bobmarley","blacksabbath","stonetemplepilots","silverchair","paulmccartney","blur","nek","greenday","thepolice","depechemode","rageagainstthemachine","madonna","rogerskenny","brooks & dunn","883","thedrifters","amygrant","herman","toriamos","eltonjohn","britneyspears","lennykravitz","celentano","ringostarr","neildiamond","aqua","oscarpeterson","joejackson","moby","collinsphil","leosayer","takethat","electriclightorchestra","pearljam","marcanthony","borodin","petshopboys","stevienicks","hollybuddy","turnertina","annaoxa","zztop","sting","themoodyblues","ruggeri","creed","claudebolling","renzoarbore","erasure","elviscostello","airsupply","tinaturner","leali","petergabriel","nodoubt","bread","huey lewis & the news","brandy","level42","radiohead","georgebenson","wonderstevie","thesmashingpumpkins","cyndilauper","rodstewart","bush","ramazzotti","bobseger","theshadows","gershwin","cream","biagioantonacci","steviewonder","nomadi","direstraits","davidbowie","amostori","thealanparsonsproject","johnlennon","crosbystillsnashandyoung","battiato","kansas","clementi","richielionel","yes","brassensgeorges","steelydan","jacksonmichael","buddyholly","earthwindandfire","natkingcole","therascals","bonjovi","alanparsons","backstreetboys","glencampbell","howardcarpendale","thesupremes","villagepeople","blink-182","jacksonbrowne","sade","lynyrdskynyrd","foofighters","2unlimited","battisti","hall & oates","stansfieldlisa","genesis","boyzone","theoffspring","tomjones","davematthewsband","johnelton","neilyoung","dionnewarwick","aceofbase","marilynmanson","taylorjames","rkelly","grandi","sublime","edvardgrieg","tool","bachjohannsebastian","patbenatar","celinedion","queen","soundgarden","abba","drdre","defleppard","dominofats","realmccoy","natalieimbruglia","hole","spinners","arethafranklin","reospeedwagon","indian","movie","scottish","irish","african","taylorswift","shakira","blues","latin","katyperry","world","kpop","africandrum","michaelbuble","rihanna","gospel","beyonce","chinese","arabic","adele","kellyclarkson","theeagles","handel","rachmaninov","schumann","christmas","dance","punk","natl_anthem","brahms","rap","ravel","burgmueller","other","schubert","granados","albeniz","mendelssohn","debussy","grieg","moszkowski","godowsky","folk","mussorgsky","kids","balakirev","hymns","verdi","hummel","deleted","delibes","saint-saens","puccini","satie","offenbach","widor","songs","stravinsky","vivaldi","gurlitt","alkan","weber","strauss","traditional","rossini","mahler","soler","sousa","telemann","busoni","scarlatti","stamitz","classical","jstrauss2","gabrieli","nielsen","purcell","donizetti","kuhlau","gounod","gibbons","weiss","faure","holst","spohr","monteverdi","reger","bizet","elgar","czerny","sullivan","shostakovich","franck","rubinstein","albrechtsberger","paganini","diabelli","gottschalk","wieniawski","lully","morley","sibelius","scriabin","heller","thalberg","dowland","carulli","pachelbel","sor","marcello","ketterer","rimsky-korsakov","ascher","bruckner","janequin","anonymous","kreutzer","sanz","joplin","susato","giuliani","lassus","palestrina","smetana","berlioz","couperin","gomolka","daquin","herz","campion","walthew","pergolesi","reicha","polak","holborne","hassler","corelli","cato","azzaiolo","anerio","gastoldi","goudimel","dussek","prez","cimarosa","byrd","praetorius","rameau","khachaturian","machaut","gade","perosi","gorzanis","smith","haberbier","carr","marais","glazunov","guerrero","cabanilles","losy","roman","hasse","sammartini","blow","zipoli","duvernoy","aguado","cherubini","victoria","field","andersen","poulenc","d'aragona","lemire","krakowa","maier","rimini","encina","banchieri","best","galilei","warhorse","gypsy","soundtrack","encore","roblaidlow","nationalanthems","benjyshelton","ongcmu","crosbystillsnashyoung","smashingpumpkins","aaaaaaaaaaa","alanismorrisette","animenz","onedirection","nintendo","disneythemes","gunsnroses","rollingstones","juliancasablancas","abdelmoinealfa","berckmansdeoliveira","moviethemes","beachboys","davemathews","videogamethemes","moabberckmansdeoliveira","unknown","cameronleesimpson","johannsebastianbach","thecarpenters","elo","nightwish","blink182","emersonlakeandpalmer","tvthemes"];
 	var genre = document.getElementById("genre").value;
 	if (genre == "<random>") {
@@ -209,13 +256,9 @@ window.extend = function() {
 		document.getElementById('sound2').currentTime = oldDuration;
 		document.getElementById('sound3').currentTime = oldDuration;
 		document.getElementById('sound4').currentTime = oldDuration;
-		ding.play();
-		document.getElementById("button").disabled = false;
-		document.getElementById("loader-inner").style.animation = "none";
+		stopLoading();
 	}).catch(error => {
-		ding.play();
-		document.getElementById("button").disabled = false;
-		document.getElementById("loader-inner").style.animation = "none";
+		stopLoading();
 		alert(error);
 	});
 }
@@ -255,7 +298,10 @@ window.encodingToMidiFile = function(encoding, outlink) {
 	             [{"deltaTime":0,"channel":9,"type":"programChange","programNumber":0}]]
 	};
 
-	var tokens = encoding.trim().split(" ");
+	var tokens = [];
+	if (encoding.trim()) {
+		tokens = encoding.trim().split(" ");
+	}
 
 	var deltaTimes = [0,0,0,0,0,0,0,0,0,0];
 	var usedDrumNotes = new Set();
@@ -279,6 +325,17 @@ window.encodingToMidiFile = function(encoding, outlink) {
 			for (var j=0; j<10; j++) {
 				deltaTimes[j] += parsedToken.delay;
 			}
+			for (let pitch of usedDrumNotes) {
+				midiData.tracks[9].push({
+					"deltaTime": deltaTimes[9],
+					"channel": 9,
+					"type": "noteOff",
+					"noteNumber": pitch,
+					"velocity": 0
+				});
+				deltaTimes[9] = 0;
+			}
+			usedDrumNotes = new Set();
 		}
 	}
 	for (let pitch of usedDrumNotes) {
@@ -301,13 +358,25 @@ window.encodingToMidiFile = function(encoding, outlink) {
 		deltaTimes[i] = 0;
 	}
 
-	midiData.tracks = midiData.tracks.filter(track => track.length > 2);
+	var filteredMidiTracks = midiData.tracks.filter(track => track.length > 2);
+	if (filteredMidiTracks.length > 0) {
+		midiData.tracks = filteredMidiTracks;
+	}
+	
+	midiData.tracks[0].unshift({
+		"deltaTime": 0,
+		"meta": true,
+		"type": "setTempo",
+		"microsecondsPerBeat": 480000
+	});
 
 	console.log(midiData);
 
 	var midiBlob = new Blob([new Uint8Array(writeMidi(midiData))], {type: "audio/midi"});
-	document.getElementById(outlink).href = URL.createObjectURL(midiBlob);
+	var objectUrl = URL.createObjectURL(midiBlob);
+	document.getElementById(outlink).href = objectUrl;
 	document.getElementById(outlink).target = "_blank";
+	document.getElementById(outlink).download = new Date().toISOString().replace("T","-").replaceAll(":","-").replace(/\..+/,"")+".mid"
 }
 window.encodingToMidiFile(document.getElementById("inbox").value, "download_inbox");
 window.encodingToMidiFile(document.getElementById("outbox1").value, "download_outbox1");
