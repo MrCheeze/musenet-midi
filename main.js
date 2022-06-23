@@ -121,7 +121,10 @@ window.importMidiFile = function(file) {
 				checkboxID = "harp";
 			} else {
 				inst = "piano";
-				baseNoteOn = 8*128;
+				var baseNoteGroup = Math.round(event.velocity/8) - 2;
+				if (baseNoteGroup < 1) { baseNoteGroup = 1; }
+				if (baseNoteGroup > 13) { baseNoteGroup = 13; }
+				baseNoteOn = baseNoteGroup*128;
 				baseNoteOff = 0*128;
 				checkboxID = "piano";
 			}
